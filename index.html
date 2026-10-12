@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CEMA Sermon AI – Scripture on screen the moment it's spoken</title>
+<meta name="description" content="Voice-controlled scripture presentation, live AI sermon notes and broadcast-grade output for churches. Say the verse, and it is on the screen. From $19/month.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#10173a; --ink-2:#4a5173; --ink-3:#7a809c;
+  --paper:#f6f7fb; --white:#fff; --line:#dfe2ee;
+  --stage:#0c1130; --stage-2:#161c47;
+  --candle:#f0b04a; --candle-deep:#b87414;
+  --blue:#3a56d4;
+  --wa:#1faa59; --wa-d:#168a47;
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;
+  --sans:'Instrument Sans','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--white);line-height:1.6;font-size:17px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+.sec{padding:96px 0}
+h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.08;letter-spacing:-.015em}
+h2{font-size:clamp(32px,4.4vw,52px);max-width:18ch}
+.lede{color:var(--ink-2);font-size:19px;max-width:56ch;margin-top:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 26px;border-radius:var(--r);font-weight:600;font-size:16px;border:1.5px solid transparent;transition:background .15s,border-color .15s,transform .15s;cursor:pointer;font-family:inherit;text-align:center}
+.btn:active{transform:translateY(1px)}
+.btn-wa{background:var(--wa);color:#fff}.btn-wa:hover{background:var(--wa-d)}
+.btn-ink{background:var(--ink);color:#fff}.btn-ink:hover{background:#1c2656}
+.btn-line{border-color:var(--ink);color:var(--ink)}.btn-line:hover{background:var(--ink);color:#fff}
+.btn-line-lt{border-color:rgba(255,255,255,.4);color:#fff}.btn-line-lt:hover{background:rgba(255,255,255,.1)}
+.wa-ic{width:20px;height:20px;flex:none}
+
+/* nav */
+header.nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:20px}
+.brand{white-space:nowrap;font-family:var(--serif);font-size:23px;font-weight:500;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.brand i{display:block;width:22px;height:22px;border-radius:6px;background:var(--stage);position:relative}
+.brand i:after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--candle)}
+.nav ul{display:flex;gap:30px;list-style:none;font-size:15px;font-weight:500;color:var(--ink-2)}
+.nav ul a:hover{color:var(--ink)}
+.nav .btn{padding:10px 18px;font-size:15px;white-space:nowrap}
+
+/* hero */
+.hero{padding:72px 0 88px;background:linear-gradient(180deg,var(--paper),var(--white))}
+.hero .wrap{display:grid;grid-template-columns:1fr 1.08fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(42px,6vw,76px);margin-bottom:22px}
+.hero .lede{font-size:20px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.proof{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:30px;font-size:14.5px;color:var(--ink-2)}
+.proof span{display:flex;align-items:center;gap:8px}
+.proof span:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--candle-deep)}
+
+/* the demo screen */
+.demo{background:var(--stage);border-radius:18px;padding:14px;box-shadow:0 30px 60px -20px rgba(12,17,48,.45)}
+.demo-top{display:flex;align-items:center;gap:10px;color:#aab2dd;font-size:13px;padding:2px 8px 12px}
+.demo-top .dot{width:9px;height:9px;border-radius:50%;background:#e5484d;transition:background .2s}
+.demo-top .dot.on{background:#3ecf8e}
+.demo-top b{font-weight:600;color:#fff;margin-left:2px}
+.heard{margin:0 4px 12px;background:var(--stage-2);border-radius:10px;padding:14px 16px;min-height:76px;color:#d6dbf5;font-size:16px}
+.heard small{display:block;color:#8d95c4;font-size:12.5px;margin-bottom:4px}
+.heard q{quotes:none;font-style:italic}
+.heard q:after{content:"";display:inline-block;width:2px;height:1em;background:var(--candle);margin-left:2px;vertical-align:-2px;animation:blink 1s steps(1) infinite}
+.screen{position:relative;background:radial-gradient(120% 90% at 50% 0%,#232b66 0,#0f1540 70%);border-radius:10px;aspect-ratio:16/9;display:flex;flex-direction:column;justify-content:center;padding:6% 8%;overflow:hidden;color:#fff}
+.screen .ref{font-family:var(--sans);font-size:clamp(12px,1.4vw,15px);font-weight:600;color:var(--candle);margin-bottom:10px;transition:opacity .35s}
+.screen .txt{font-family:var(--serif);font-size:clamp(17px,2.3vw,29px);line-height:1.3;transition:opacity .35s}
+.screen .tr{position:absolute;right:14px;bottom:12px;font-size:12px;color:#8d95c4;transition:opacity .35s}
+.screen.fade .ref,.screen.fade .txt,.screen.fade .tr{opacity:0}
+.demo-foot{display:flex;gap:8px;padding:12px 4px 2px;flex-wrap:wrap}
+.demo-foot span{font-size:12.5px;color:#aab2dd;border:1px solid #2a3274;border-radius:99px;padding:3px 11px}
+@keyframes blink{50%{opacity:0}}
+
+/* sunday contrast */
+.contrast{background:var(--ink);color:#fff}
+.contrast h2{color:#fff;max-width:20ch}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:48px}
+.cmp>div{border-radius:14px;padding:32px}
+.cmp .no{background:#1a2150;border:1px solid #2a3274}
+.cmp .yes{background:var(--white);color:var(--ink)}
+.cmp h3{font-family:var(--sans);font-size:15px;font-weight:600;margin-bottom:16px;letter-spacing:0}
+.cmp .no h3{color:#aab2dd}.cmp .yes h3{color:var(--candle-deep)}
+.cmp ul{list-style:none;display:grid;gap:14px}
+.cmp li{padding-left:28px;position:relative;font-size:17px;line-height:1.45}
+.cmp .no li{color:#c5cbee}
+.cmp .no li:before{content:"×";position:absolute;left:0;color:#e5787c;font-weight:700}
+.cmp .yes li:before{content:"✓";position:absolute;left:0;color:var(--wa);font-weight:700}
+
+/* features */
+.feat-grid{display:grid;gap:0;margin-top:56px;border-top:1px solid var(--line)}
+.fr{display:grid;grid-template-columns:.9fr 1.3fr;gap:48px;padding:44px 0;border-bottom:1px solid var(--line)}
+.fr h3{font-size:clamp(26px,3vw,36px)}
+.fr .kick{color:var(--ink-2);margin-top:12px;max-width:38ch;font-size:17px}
+.fr ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:22px 32px}
+.fr li b{display:block;font-weight:600;font-size:16.5px;margin-bottom:3px}
+.fr li span{color:var(--ink-2);font-size:15.5px;line-height:1.5;display:block}
+
+/* team */
+.team{background:var(--paper)}
+.team-g{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:48px}
+.team-g div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px}
+.team-g h3{font-family:var(--sans);font-size:17px;font-weight:600;letter-spacing:0;margin-bottom:8px}
+.team-g p{color:var(--ink-2);font-size:15.5px;line-height:1.5}
+
+/* pricing */
+.price-head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:52px;align-items:stretch}
+.plan{border:1.5px solid var(--line);border-radius:18px;padding:34px 30px;display:flex;flex-direction:column;background:#fff;position:relative}
+.plan.best{border-color:var(--ink);box-shadow:0 24px 50px -24px rgba(16,23,58,.35)}
+.flag{position:absolute;top:-13px;left:30px;background:var(--candle);color:#3b2a05;font-size:13px;font-weight:700;padding:4px 14px;border-radius:99px}
+.plan h3{font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:0}
+.plan .for{color:var(--ink-2);font-size:15.5px;margin:6px 0 22px;min-height:48px}
+.amt{font-family:var(--serif);font-size:64px;line-height:1;letter-spacing:-.03em}
+.amt sup{font-size:28px;vertical-align:top;position:relative;top:10px;margin-right:2px}
+.amt small{font-family:var(--sans);font-size:16px;color:var(--ink-2);letter-spacing:0;margin-left:6px}
+.worth{font-size:14.5px;color:var(--candle-deep);font-weight:600;margin:10px 0 24px;min-height:22px}
+.plan ul{list-style:none;display:grid;gap:11px;margin-bottom:30px;flex:1;font-size:16px}
+.plan li{padding-left:28px;position:relative;line-height:1.45}
+.plan li:before{content:"✓";position:absolute;left:0;color:var(--wa);font-weight:700}
+.plan .btn{width:100%}
+.guar{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px;font-size:15px;color:var(--ink-2)}
+.guar b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+
+/* steps */
+.steps-sec{background:var(--paper)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:52px;counter-reset:s}
+.step{padding:0 28px 0 0;position:relative}
+.step:before{counter-increment:s;content:counter(s);display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:var(--ink);color:#fff;font-weight:600;margin-bottom:18px}
+.step:not(:last-child):after{content:"";position:absolute;top:19px;left:50px;right:12px;height:1.5px;background:var(--line)}
+.step h3{font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:0;margin-bottom:6px}
+.step p{color:var(--ink-2);font-size:15.5px;line-height:1.5}
+
+/* faq */
+.faq-wrap{display:grid;grid-template-columns:.8fr 1.4fr;gap:64px}
+details{border-bottom:1px solid var(--line)}
+details:first-child{border-top:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;padding:22px 0;font-weight:600;font-size:18px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";font-size:26px;font-weight:400;color:var(--ink-3);transition:transform .2s;line-height:1}
+details[open] summary:after{transform:rotate(45deg)}
+details p{color:var(--ink-2);padding:0 40px 24px 0;font-size:16.5px;max-width:62ch}
+
+/* final */
+.final{background:var(--stage);color:#fff;text-align:center;padding:104px 0}
+.final h2{color:#fff;max-width:20ch;margin:0 auto}
+.final p{color:#b9c0e6;margin:20px auto 36px;max-width:50ch;font-size:19px}
+.final .cta{justify-content:center;margin-top:0}
+.final small{display:block;margin-top:20px;color:#8d95c4;font-size:14.5px}
+
+footer{padding:34px 0;font-size:14.5px;color:var(--ink-3);border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+.wa-float{position:fixed;right:18px;bottom:18px;z-index:50;background:var(--wa);color:#fff;border-radius:99px;padding:13px 20px;font-weight:600;font-size:15px;display:flex;gap:9px;align-items:center;box-shadow:0 10px 28px rgba(0,0,0,.28)}
+.wa-float:hover{background:var(--wa-d)}
+
+@media(max-width:980px){
+  .hero .wrap{grid-template-columns:1fr;gap:44px}
+  .fr{grid-template-columns:1fr;gap:26px}
+  .team-g{grid-template-columns:1fr 1fr}
+  .plans{grid-template-columns:1fr;max-width:480px}
+  .steps{grid-template-columns:1fr 1fr;gap:34px 0}
+  .step:after{display:none}
+  .faq-wrap{grid-template-columns:1fr;gap:30px}
+  .guar{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  body{font-size:16.5px}
+  .sec{padding:68px 0}
+  .nav ul{display:none}
+  .cmp{grid-template-columns:1fr}
+  .fr ul{grid-template-columns:1fr}
+  .team-g{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .wa-float span{display:none}
+  .wa-float{padding:14px}
+  .btn{width:100%}
+  .nav .btn{width:auto}
+  .brand{font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12.04 2a9.9 9.9 0 0 0-8.5 14.95L2 22l5.2-1.5A9.95 9.95 0 1 0 12.04 2Zm5.8 14.1c-.25.7-1.4 1.3-1.95 1.35-.5.05-1.1.07-1.8-.12-.4-.13-.95-.3-1.6-.6-2.8-1.2-4.6-4-4.75-4.2-.13-.2-1.1-1.5-1.1-2.8s.7-2 .95-2.25c.25-.27.55-.33.73-.33h.52c.17 0 .4-.06.62.48.25.57.82 1.97.9 2.1.07.15.1.3.02.48-.1.18-.15.3-.3.47-.15.17-.3.37-.43.5-.15.15-.3.3-.13.6.17.3.77 1.27 1.65 2.05 1.12 1 2.07 1.3 2.37 1.45.3.15.47.12.65-.07.17-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.27.1 1.7.8 2 .95.3.15.5.22.57.35.08.12.08.7-.17 1.4Z"/></symbol></svg>
+
+<header class="nav">
+  <div class="wrap">
+    <a href="#top" class="brand"><i></i>CEMA Sermon AI</a>
+    <nav aria-label="Main"><ul>
+      <li><a href="#sunday">Why it matters</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">Questions</a></li>
+    </ul></nav>
+    <a class="btn btn-ink" href="#pricing">See pricing</a>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1>The verse is on screen before the preacher finishes the sentence.</h1>
+      <p class="lede">CEMA Sermon AI listens to the message and puts scripture, key points and media on your church screens. No one at the booth hunts for a verse. No one on the platform looks down.</p>
+      <div class="cta">
+        <a class="btn btn-wa" href="https://wa.me/2349064762014?text=Hello%20CEMA%20Support!%20%F0%9F%99%8F%20I%20would%20like%20to%20see%20a%20demo%20of%20CEMA%20Sermon%20AI.%20My%20church%20name%20is%3A%20"><svg class="wa-ic"><use href="#wa"/></svg>Book a free demo</a>
+        <a class="btn btn-line" href="#pricing">See pricing</a>
+      </div>
+      <div class="proof">
+        <span>Understands Nigerian accents</span>
+        <span>Works offline</span>
+        <span>Hausa, Igbo, Yoruba &amp; Pidgin Bibles</span>
+      </div>
+    </div>
+
+    <div class="demo" role="img" aria-label="Demonstration: a spoken scripture reference appears on the projector screen">
+      <div class="demo-top"><span class="dot on" id="dot"></span><b>CEMA Sermon AI</b> <span>Listening</span></div>
+      <div class="heard"><small>Heard from the pulpit</small><q id="heard">Turn with me to John chapter 3, verse 16</q></div>
+      <div class="screen" id="screen">
+        <div class="ref" id="ref">John 3:16</div>
+        <div class="txt" id="txt">For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.</div>
+        <div class="tr" id="tr">KJV</div>
+      </div>
+      <div class="demo-foot"><span>HDMI</span><span>NDI</span><span>OBS</span><span>vMix</span><span>Wirecast</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec contrast" id="sunday">
+  <div class="wrap">
+    <h2>Your congregation should be looking at the Word, not waiting for it.</h2>
+    <p class="lede" style="color:#b9c0e6">Every second between the preacher's words and the screen is a second the room loses the thread. Here is what changes.</p>
+    <div class="cmp">
+      <div class="no">
+        <h3>A normal Sunday</h3>
+        <ul>
+          <li>The preacher announces a verse and waits while the booth searches for it.</li>
+          <li>The wrong chapter goes up, or the right one arrives late.</li>
+          <li>Sermon points are written by hand and rarely reach the screen.</li>
+          <li>Members who missed a point have nothing to follow.</li>
+        </ul>
+      </div>
+      <div class="yes">
+        <h3>With CEMA Sermon AI</h3>
+        <ul>
+          <li>The verse appears as it is spoken, in the translation the preacher names.</li>
+          <li>Key points, definitions and quotes become ready-to-show scenes.</li>
+          <li>One operator runs scripture, media and notes from a single screen.</li>
+          <li>After service, the outline and quote sheet are ready to share.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="features">
+  <div class="wrap">
+    <h2>Everything a media team needs, in one program.</h2>
+    <p class="lede">Every feature is included in every plan. You choose how you pay, not what you get.</p>
+
+    <div class="feat-grid">
+      <div class="fr">
+        <div><h3>Speak it, and it shows</h3><p class="kick">Hands-free scripture that keeps up with a fast preacher.</p></div>
+        <ul>
+          <li><b>Scripture by reference</b><span>"John 3:16", "Romans chapter 8 verse 28" or "verses 12 to 19". Spoken numbers and Nigerian accents are handled.</span></li>
+          <li><b>Quote-to-verse</b><span>Quote a verse without the reference and the software finds it. Switch this on or off in Settings.</span></li>
+          <li><b>Voice commands</b><span>Say "Next verse", "Previous verse", "Clear screen" or "Put it up".</span></li>
+          <li><b>Translations by voice</b><span>Say "Switch to NIV". 25+ versions, including KJV, NKJV, ESV, NLT, AMP, NASB, TPT, Hausa, Igbo, Yoruba and Pidgin.</span></li>
+        </ul>
+      </div>
+
+      <div class="fr">
+        <div><h3>Notes that write themselves</h3><p class="kick">An AI that follows the message and keeps what was actually said.</p></div>
+        <ul>
+          <li><b>Live sermon notes</b><span>Key points, definitions, quotes and numbered points, grouped by topic as the message develops.</span></li>
+          <li><b>Faithful to the preacher</b><span>Every point comes from what was said. Edit, merge, seal or remove any topic.</span></li>
+          <li><b>Ready-to-use scenes</b><span>Turn images, video, quotes and key points into polished scenes you can project at once.</span></li>
+          <li><b>Amen Export</b><span>After service, export the outline, quote sheet and scene pack as text or print-ready HTML.</span></li>
+        </ul>
+      </div>
+
+      <div class="fr">
+        <div><h3>Broadcast-grade output</h3><p class="kick">The screens in the hall and the stream at home, from one source.</p></div>
+        <ul>
+          <li><b>HDMI, NDI and OBS</b><span>Full-screen projector output plus NDI for OBS, vMix and Wirecast. Lower-third and transparent modes included.</span></li>
+          <li><b>MultiView scene wall</b><span>Click to select, double-click to go live, with Preview and Program monitors like a broadcast switcher.</span></li>
+          <li><b>Full control of the look</b><span>Any installed font, colour, size, shadow, outline, alignment and background picture. Format scripture and notes separately.</span></li>
+          <li><b>Export and import settings</b><span>Save your formatting, backgrounds included, in one file and load it on any computer.</span></li>
+        </ul>
+      </div>
+
+      <div class="fr">
+        <div><h3>Built for live services</h3><p class="kick">Steady when the service is running and nothing can go wrong.</p></div>
+        <ul>
+          <li><b>Phone remote</b><span>Pair an Android phone on the same Wi-Fi with a 4-digit key. Search, step through verses and take scenes live from anywhere in the hall.</span></li>
+          <li><b>Cloud or offline</b><span>Fast cloud recognition with internet, built-in offline mode without. If the network drops, the mic keeps going.</span></li>
+          <li><b>Runs beside your stream</b><span>Stays awake when the PC is locked and does not compete with OBS or vMix for resources.</span></li>
+          <li><b>Off Air in one click</b><span>Go to a clean black screen instantly. Choose from 12 themes, light and dark.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec team">
+  <div class="wrap">
+    <h2>Every person in the media ministry gets an easier Sunday.</h2>
+    <div class="team-g">
+      <div><h3>Pastors and preachers</h3><p>Preach freely. No looking down, no signalling the booth.</p></div>
+      <div><h3>Church media teams</h3><p>Fewer mistakes and less stress. Scenes are ready before you need them.</p></div>
+      <div><h3>Sound engineers</h3><p>Clean NDI, HDMI and OBS feeds that drop straight into your stream.</p></div>
+      <div><h3>Worship ministries</h3><p>Scripture, media and notes in one interface across the whole service.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="pricing">
+  <div class="wrap">
+    <div class="price-head">
+      <div>
+        <h2>Pick how you want to pay.</h2>
+        <p class="lede">All three plans include every feature. Prices are in US dollars. Pay by transfer through our WhatsApp team.</p>
+      </div>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <h3>Monthly Ministry</h3>
+        <p class="for">For guest speakers, new churches and anyone who wants to try it first.</p>
+        <div class="amt"><sup>$</sup>19<small>per month</small></div>
+        <div class="worth">Cancel anytime</div>
+        <ul>
+          <li>Hands-free voice navigation</li>
+          <li>Pro broadcast output (HDMI and streaming)</li>
+          <li>Multi-translation library</li>
+          <li>AI sermon notes and scenes</li>
+          <li>1 computer license</li>
+        </ul>
+        <a class="btn btn-line" href="https://wa.me/2349064762014?text=Hello%20CEMA%20Support!%20%F0%9F%99%8F%20I%20want%20to%20purchase%20the%20*Monthly%20Ministry%20Plan*%20(%2419%2Fmo).%20My%20church%20name%20is%3A%20">Start monthly on WhatsApp</a>
+      </div>
+
+      <div class="plan best">
+        <span class="flag">Most popular</span>
+        <h3>Annual Ministry</h3>
+        <p class="for">For established churches that run the software every week.</p>
+        <div class="amt"><sup>$</sup>149<small>per year</small></div>
+        <div class="worth">Save 35% against paying monthly</div>
+        <ul>
+          <li>Everything in Monthly</li>
+          <li>Priority WhatsApp support</li>
+          <li>Free updates</li>
+          <li>1 computer license</li>
+          <li>Billed once a year</li>
+        </ul>
+        <a class="btn btn-wa" href="https://wa.me/2349064762014?text=Hello%20CEMA%20Support!%20%F0%9F%99%8F%20I%20want%20to%20purchase%20the%20*Annual%20Ministry%20Plan*%20(%24149%2Fyr).%20My%20church%20name%20is%3A%20"><svg class="wa-ic"><use href="#wa"/></svg>Buy annual plan</a>
+      </div>
+
+      <div class="plan">
+        <h3>Lifetime Church</h3>
+        <p class="for">For churches that want to pay once and never think about renewals.</p>
+        <div class="amt"><sup>$</sup>399<small>one time</small></div>
+        <div class="worth">Pays off in 21 months vs. monthly</div>
+        <ul>
+          <li>Everything in Annual</li>
+          <li>Pay once, use forever</li>
+          <li>Direct phone support</li>
+          <li>1 computer license</li>
+          <li>Commercial church rights</li>
+        </ul>
+        <a class="btn btn-ink" href="https://wa.me/2349064762014?text=Hello%20CEMA%20Support!%20%F0%9F%99%8F%20I%20want%20to%20purchase%20the%20*Lifetime%20Church%20License*%20(%24399).%20My%20church%20name%20is%3A%20">Buy lifetime license</a>
+      </div>
+    </div>
+
+    <div class="guar">
+      <div><b>See it before you pay</b>Book a free demo and watch it work on a real sermon.</div>
+      <div><b>A person, not a ticket</b>Everything runs through WhatsApp with our team.</div>
+      <div><b>Need more computers?</b><a href="https://wa.me/2349064762014" style="text-decoration:underline">Message us</a> and we will quote you.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec steps-sec" id="how">
+  <div class="wrap">
+    <h2>From first message to Sunday service.</h2>
+    <div class="steps">
+      <div class="step"><h3>Choose a plan</h3><p>Tap its button and WhatsApp opens with your message already written.</p></div>
+      <div class="step"><h3>Tell us your church</h3><p>Send your church name and complete payment with our team.</p></div>
+      <div class="step"><h3>Receive your key</h3><p>We generate a secure activation key for your computer straight away.</p></div>
+      <div class="step"><h3>Paste and preach</h3><p>Paste the key into the app. You are ready for service.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="faq">
+  <div class="wrap faq-wrap">
+    <div>
+      <h2>Questions churches ask first.</h2>
+      <p class="lede" style="font-size:17px">Something else? <a href="https://wa.me/2349064762014" style="text-decoration:underline">Ask us on WhatsApp</a>.</p>
+    </div>
+    <div>
+      <details open><summary>How does the voice AI work during a service?</summary><p>You speak into the microphone, for example "John 3:16" or "Next verse", and the screen updates. The pastor never has to look down, click a mouse or use a keyboard while preaching.</p></details>
+      <details><summary>Do we need an internet connection?</summary><p>Cloud AI gives the fastest, most accurate recognition. If your church has poor or no internet, the built-in Offline Mode works without Wi-Fi.</p></details>
+      <details><summary>Will it work with our projector and live stream?</summary><p>Yes. Project to your displays over a standard HDMI cable. For live streaming it connects to OBS, vMix and Wirecast through NDI and OBS output.</p></details>
+      <details><summary>What if the preacher quotes a verse without the reference?</summary><p>The software can recognise the quote and show the verse. If you prefer navigation by explicit reference only, turn this off in Settings.</p></details>
+      <details><summary>Which Bible translations are included?</summary><p>A large library including KJV, NKJV, NIV, ESV, NLT, AMP, NASB, NRSV and TPT, plus Hausa, Igbo, Yoruba and Nigerian Pidgin. Say the translation's name and it switches.</p></details>
+      <details><summary>What do the AI sermon notes do?</summary><p>They follow the message and capture key points, definitions, quotes and scriptures by topic. You can turn them into scenes, edit them, or export them after service.</p></details>
+      <details><summary>Can we reuse our formatting on another computer?</summary><p>Yes. Export all your output settings, background pictures included, as one file and import it on any computer. Your look stays the same every week.</p></details>
+      <details><summary>Can I control it from my phone?</summary><p>Yes. The phone remote connects over your local Wi-Fi with a 4-digit key. You can search verses, step through them and take scenes live from anywhere in the room.</p></details>
+      <details><summary>How do I receive my activation key?</summary><p>After you chat with us on WhatsApp and complete payment, we generate a secure activation key for your computer. Paste it into the app and you are ready.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Let your technology help the congregation follow along.</h2>
+    <p>Book a free demo and see your own sermon appear on screen. We reply on WhatsApp.</p>
+    <div class="cta">
+      <a class="btn btn-wa" style="font-size:17px;padding:17px 32px" href="https://wa.me/2349064762014?text=Hello%20CEMA%20Support!%20%F0%9F%99%8F%20I%20would%20like%20to%20know%20more%20about%20CEMA%20Sermon%20AI.%20My%20church%20name%20is%3A%20"><svg class="wa-ic"><use href="#wa"/></svg>Chat on WhatsApp</a>
+    </div>
+    <small>+234 906 476 2014</small>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap"><span>© 2026 CEMA Panthera Group. All rights reserved.</span><span>CEMA Sermon AI</span></div>
+</footer>
+
+<a class="wa-float" aria-label="Chat with us on WhatsApp" href="https://wa.me/2349064762014?text=Hello%20CEMA%20Support!%20%F0%9F%99%8F%20I%20have%20a%20question%20about%20CEMA%20Sermon%20AI.%20My%20church%20name%20is%3A%20"><svg class="wa-ic"><use href="#wa"/></svg><span>Chat with us</span></a>
+
+<script>
+(function(){
+  var seq=[
+    {h:"Turn with me to John chapter 3, verse 16",r:"John 3:16",t:"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",v:"KJV"},
+    {h:"Romans chapter 8 and verse 28",r:"Romans 8:28",t:"And we know that all things work together for good to them that love God, to them who are the called according to his purpose.",v:"KJV"},
+    {h:"The Lord is my shepherd, I shall not want",r:"Psalm 23:1",t:"The Lord is my shepherd; I shall not want.",v:"KJV"},
+    {h:"Switch to NIV. Philippians 4:13",r:"Philippians 4:13",t:"I can do all this through him who gives me strength.",v:"NIV"}
+  ];
+  var h=document.getElementById('heard'),s=document.getElementById('screen'),
+      r=document.getElementById('ref'),t=document.getElementById('txt'),v=document.getElementById('tr');
+  if(!h||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var i=0;
+  function show(n){
+    s.classList.add('fade');
+    setTimeout(function(){r.textContent=n.r;t.textContent=n.t;v.textContent=n.v;s.classList.remove('fade');},350);
+  }
+  function type(n,done){
+    var k=0;h.textContent='';
+    (function step(){
+      h.textContent=n.h.slice(0,++k);
+      if(k<n.h.length)setTimeout(step,38);else done();
+    })();
+  }
+  function next(){
+    i=(i+1)%seq.length;var n=seq[i];
+    type(n,function(){setTimeout(function(){show(n);setTimeout(next,4200);},500);});
+  }
+  setTimeout(next,4600);
+})();
+</script>
+</body>
+</html>
